@@ -4,6 +4,7 @@ import datetime
 import sched
 import storyPoster
 
+# Varre o diretório e insere os arquivos para agendamento
 def procurar_arquivos(diretorio):
     arquivos_encontrados = []
     for root, dirs, files in os.walk(diretorio):
@@ -11,10 +12,11 @@ def procurar_arquivos(diretorio):
             arquivos_encontrados.append(os.path.join(root, file))
     return arquivos_encontrados
 
+# Agenda os jobs para serem executados conforme data, que é o próprio nome do arquivo
 def agendar_tarefas(arquivos):
     s = sched.scheduler(time.time, time.sleep)
     for arquivo in arquivos:
-        # Converte o nome do arquivo (epoch) para um objeto datetime
+        # Converte o nome do arquivo (epoch) para datetime
         data_epoch = int(os.path.splitext(os.path.basename(arquivo))[0])
         data = datetime.datetime.utcfromtimestamp(data_epoch)
         print(data)
@@ -22,10 +24,10 @@ def agendar_tarefas(arquivos):
         s.enterabs(data.timestamp(), 1, executar_tarefa, argument=(arquivo,))
     s.run()
 
+# Chama o storyPoster para realização do Post
 def executar_tarefa(arquivo):
-    print("Executou")
-    print(os.path.abspath(arquivo))
-    storyPoster.post(arquivo)
+    # É passado o path absoluto do arquivo para a função
+    storyPoster.post(os.path.abspath(arquivo))
 
 # Diretório inicial
 diretorio = 'stories/'
@@ -36,12 +38,9 @@ if arquivos_encontrados:
     print("Arquivos encontrados:")
     for arquivo in arquivos_encontrados:
         print(arquivo)
-
     # Agendar tarefas para execução nas datas especificadas pelos arquivos encontrados
     print("Agendando tarefas...")
     agendar_tarefas(arquivos_encontrados)
-    
-
 else:
-    print("Nenhum arquivo encontrado com o formato de data epoch.")
+    print("Nenhum arquivo encontrado para agendamento.")
 
